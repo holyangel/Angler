@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 73
-EXTRAVERSION =
+EXTRAVERSION = -SkyDragon-v0.15
 NAME = TOSSUG Baby Fish
 
 # *DOCUMENTATION*
@@ -158,6 +158,8 @@ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
 export srctree objtree VPATH
 
+CCACHE := ccache
+
 # SUBARCH tells the usermode build what the underlying arch is.  That is set
 # first, and if a usermode build is happening, the "ARCH=um" on the command
 # line overrides the setting of ARCH below.  If a native build is happening,
@@ -192,7 +194,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 ARCH		?= $(SUBARCH)
-CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+CROSS_COMPILE	?= $(CCACHE) $(CONFIG_CROSS_COMPILE:"%"=%)
 ARCH            := arm64
 CROSS_COMPILE   := ../aarch64-cortex_a57-linux-gnueabi/bin/aarch64-cortex_a57-linux-gnueabi-
 
@@ -240,10 +242,26 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
+GRAPHITE	= -fgraphite -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten
+EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -ftree-loop-vectorize -floop-nest-optimize -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
+                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning
+				  
+# fall back to -march=armv8-a in case the compiler isn't compatible
+# with -mcpu and -mtune
+ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
+GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
+ -g0 \
+ -DNDEBUG -pipe \
+ -fomit-frame-pointer \
+ -fmodulo-sched \
+ -fmodulo-sched-allow-regmoves \
+ -fivopts
+ 
 HOSTCC       = $(CCACHE) gcc
 HOSTCXX      = $(CCACHE) g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG
-HOSTCXXFLAGS = -O2 -pipe -DNDEBUG
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer $(GEN_OPT_FLAGS) $(GRAPHITE) $(EXTRA_OPTS)
+HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -327,7 +345,7 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC		= $(CROSS_COMPILE)gcc
+CC		= ccache $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -343,28 +361,13 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL)
+
+CFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL) 
 AFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL)
 LDFLAGS_MODULE  = --strip-debug
-CFLAGS_KERNEL	= -DNDEBUG -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-gcse \
-		-fsched-spec-load -fsingle-precision-constant -floop-nest-optimize \
-		-fgraphite-identity -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon \
-		-fivopts -ftree-vectorize -ftree-loop-vectorize -fvariable-expansion-in-unroller \
-		-fno-prefetch-loop-arrays -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 -pipe -std=gnu89 
+CFLAGS_KERNEL	= -fno-prefetch-loop-arrays $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -std=gnu89 
 AFLAGS_KERNEL	= $(CFLAGS_KERNEL)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
-
-# fall back to -march=armv8-a in case the compiler isn't compatible
-# with -mcpu and -mtune
-ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
-GEN_OPT_FLAGS := $(call cc-option,$(ARM_ARCH_OPT),-march=armv8-a) \
- -g0 \
- -DNDEBUG \
- -fomit-frame-pointer \
- -fmodulo-sched \
- -fmodulo-sched-allow-regmoves \
- -fivopts
-
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
@@ -389,13 +392,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks\
-		   $(GEN_OPT_FLAGS)
-KBUILD_AFLAGS_KERNEL := $(GEN_OPT_FLAGS)
-KBUILD_CFLAGS_KERNEL := $(GEN_OPT_FLAGS)
+		   -fno-delete-null-pointer-checks -std=gnu89 $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+
+KBUILD_AFLAGS_KERNEL := $(GRAPHITE) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_CFLAGS_KERNEL := $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_AFLAGS   := -D__ASSEMBLY__
-KBUILD_AFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS)
-KBUILD_CFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS)
+KBUILD_AFLAGS_MODULE  := -DMODULE $(GRAPHITE) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_CFLAGS_MODULE  := -DMODULE $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
@@ -588,9 +591,15 @@ endif # $(dot-config)
 all: vmlinux
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
-else
 KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
+KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
+
+else
+KBUILD_CFLAGS	+= -O3 -Wno-maybe-uninitialized $(CFLAGS_KERNEL) 
+KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
+KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
+
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
