@@ -136,23 +136,34 @@ abort_resume:
 	mutex_unlock(&power_suspend_lock);
 }
 
+bool power_suspended = false;
+
 void set_power_suspend_state(int new_state)
 {
 	unsigned long irqflags;
 
-	spin_lock_irqsave(&state_lock, irqflags);
-	if (state == POWER_SUSPEND_INACTIVE && new_state == POWER_SUSPEND_ACTIVE) {
-		#ifdef POWER_SUSPEND_DEBUG
-		pr_info("[POWERSUSPEND] state activated.\n");
-		#endif
-		state = new_state;
-		queue_work(suspend_work_queue, &power_suspend_work);
-	} else if (state == POWER_SUSPEND_ACTIVE && new_state == POWER_SUSPEND_INACTIVE) {
-		#ifdef POWER_SUSPEND_DEBUG
-		pr_info("[POWERSUSPEND] state deactivated.\n");
-		#endif
-		state = new_state;
-		queue_work(suspend_work_queue, &power_resume_work);
+	if (state != new_state) {
+		spin_lock_irqsave(&state_lock, irqflags);
+		if (state == POWER_SUSPEND_INACTIVE && new_state == POWER_SUSPEND_ACTIVE) {
+			#ifdef CONFIG_POWERSUSPEND_DEBUG
+			pr_info("[POWERSUSPEND] state activated.\n");
+			#endif
+			state = new_state;
+			power_suspended = true;
+			queue_work(suspend_work_queue, &power_suspend_work);
+		} else if (state == POWER_SUSPEND_ACTIVE && new_state == POWER_SUSPEND_INACTIVE) {
+			#ifdef CONFIG_POWERSUSPEND_DEBUG
+			pr_info("[POWERSUSPEND] state deactivated.\n");
+			#endif
+			state = new_state;
+			power_suspended = false;
+			queue_work(suspend_work_queue, &power_resume_work);
+		}
+		spin_unlock_irqrestore(&state_lock, irqflags);
+	}
+	#ifdef CONFIG_POWERSUSPEND_DEBUG
+	else {
+		pr_info("[POWERSUSPEND] state change requested, but unchanged ?! Ignored !\n");
 	}
 	spin_unlock_irqrestore(&state_lock, irqflags);
 }
