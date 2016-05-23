@@ -350,8 +350,7 @@ CFLAGS_KERNEL	= -DNDEBUG -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-gcse 
 		-fsched-spec-load -fsingle-precision-constant -floop-nest-optimize \
 		-fgraphite-identity -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon \
 		-fivopts -ftree-vectorize -ftree-loop-vectorize -fvariable-expansion-in-unroller \
-		-fno-prefetch-loop-arrays -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 -pipe \
-		-std=gnu89 
+		-fno-prefetch-loop-arrays -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 -pipe -std=gnu89 
 AFLAGS_KERNEL	= $(CFLAGS_KERNEL)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
