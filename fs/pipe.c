@@ -105,10 +105,12 @@ pipe_iov_copy_from_user(void *addr, int *offset, struct iovec *iov,
 			size_t *remaining, int atomic)
 {
 	unsigned long copy;
+
 	while (*remaining > 0) {
 		while (!iov->iov_len)
 			iov++;
 		copy = min_t(unsigned long, *remaining, iov->iov_len);
+
 		if (atomic) {
 			if (__copy_from_user_inatomic(addr + *offset,
 						      iov->iov_base, copy))
@@ -130,10 +132,12 @@ pipe_iov_copy_to_user(struct iovec *iov, void *addr, int *offset,
 		      size_t *remaining, int atomic)
 {
 	unsigned long copy;
+
 	while (*remaining > 0) {
 		while (!iov->iov_len)
 			iov++;
 		copy = min_t(unsigned long, *remaining, iov->iov_len);
+
 		if (atomic) {
 			if (__copy_to_user_inatomic(iov->iov_base,
 						    addr + *offset, copy))
@@ -356,6 +360,7 @@ pipe_read(struct kiocb *iocb, const struct iovec *_iov,
 			void *addr;
 			size_t chars = buf->len, remaining;
 			int error, atomic, offset;
+
 			if (chars > total_len)
 				chars = total_len;
 			error = ops->confirm(pipe, buf);
@@ -481,6 +486,7 @@ pipe_write(struct kiocb *iocb, const struct iovec *_iov,
 			int error, atomic = 1;
 			void *addr;
 			size_t remaining = chars;
+
 			error = ops->confirm(pipe, buf);
 			if (error)
 				goto out;
@@ -523,6 +529,7 @@ redo1:
 			int error, atomic = 1;
 			int offset = 0;
 			size_t remaining;
+
 			if (!page) {
 				page = alloc_page(GFP_HIGHUSER);
 				if (unlikely(!page)) {
@@ -547,6 +554,7 @@ redo2:
 				src = kmap_atomic(page);
 			else
 				src = kmap(page);
+
 			error = pipe_iov_copy_from_user(src, &offset, iov,
 							&remaining, atomic);
 			if (atomic)
