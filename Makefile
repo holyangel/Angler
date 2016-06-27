@@ -242,8 +242,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-GRAPHITE	= -fgraphite -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten
-EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -ftree-loop-vectorize -floop-nest-optimize -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
+GRAPHITE	= -fgraphite -fgraphite-identity -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -floop-nest-optimize
+EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -floop-nest-optimize -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
                   -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning
 				  
 # fall back to -march=armv8-a in case the compiler isn't compatible
