@@ -241,13 +241,13 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 	  
-GRAPHITE	= -fgraphite -fgraphite-identity -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -floop-nest-optimize
-EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -floop-nest-optimize -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
-                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning
+GRAPHITE	= -fgraphite -fgraphite-identity -floop-nest-optimize
+EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -floop-nest-optimize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
+                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model=dynamic -fsimd-cost-model=dynamic -fdeclone-ctor-dtor -fira-region=all -fira-hoist-pressure -fivopts -fno-tree-ter -ftree-vectorize -fprofile-correction -fbranch-target-load-optimize2 -fipa-pta 
 
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
-ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 
+ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 --param l1-cache-line-size=64 --param l1-cache-size=80 --param l2-cache-size=2048
 GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
  -g0 \
  -DNDEBUG -pipe \
@@ -596,7 +596,7 @@ KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,)
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 else
-KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,)$(CFLAGS_KERNEL) 
+KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,) $(CFLAGS_KERNEL) 
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 endif
