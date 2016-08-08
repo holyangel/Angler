@@ -259,7 +259,7 @@ GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
 HOSTCC       = $(CCACHE) gcc
 HOSTCXX      = $(CCACHE) g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer $(GEN_OPT_FLAGS) $(GRAPHITE) $(EXTRA_OPTS)
-HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -mfpu=nsoftvfp+vfp
+HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -mfpu=softvfp+vfp
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
