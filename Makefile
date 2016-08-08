@@ -247,7 +247,7 @@ EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -floop-nest-optimize -
 
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
-ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 --param l1-cache-line-size=64 --param l1-cache-size=80 --param l2-cache-size=2048
+ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 --param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=2048
 GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
  -g0 \
  -DNDEBUG -pipe \
@@ -259,7 +259,7 @@ GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
 HOSTCC       = $(CCACHE) gcc
 HOSTCXX      = $(CCACHE) g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer $(GEN_OPT_FLAGS) $(GRAPHITE) $(EXTRA_OPTS)
-HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -mfpu=neon-vfpv4
+HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -mfpu=nsoftvfp+vfp
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
