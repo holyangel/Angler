@@ -242,8 +242,9 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 	  
 GRAPHITE	= -fgraphite -fgraphite-identity -floop-nest-optimize
-EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -floop-nest-optimize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fno-gcse \
-                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model=dynamic -fsimd-cost-model=dynamic -fdeclone-ctor-dtor -fira-region=all -fira-hoist-pressure -fivopts -fno-tree-ter -ftree-vectorize -fprofile-correction -fbranch-target-load-optimize2 -fipa-pta 
+EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -finline-functions -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre  -fgcse-after-reload\
+                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model=dynamic -fsimd-cost-model=dynamic -fira-region=all -fira-hoist-pressure -fivopts -fno-tree-ter -ftree-vectorize \
+		  -fprofile-correction -fbranch-target-load-optimize2 -fipa-pta -flive-range-shrinkage
 
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
@@ -256,10 +257,10 @@ GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
  -fmodulo-sched-allow-regmoves \
  -fivopts
  
-HOSTCC       = $(CCACHE) gcc
-HOSTCXX      = $(CCACHE) g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer $(GEN_OPT_FLAGS) $(GRAPHITE) $(EXTRA_OPTS)
-HOSTCXXFLAGS = -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -mfpu=softvfp+vfp
+HOSTCC       = gcc
+HOSTCXX      = g++
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
+HOSTCXXFLAGS = -O2 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -mfpu=softvfp+vfp -fdeclone-ctor-dtor
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -366,7 +367,7 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 CFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL) 
 AFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL)
 LDFLAGS_MODULE  = --strip-debug
-CFLAGS_KERNEL	= -fno-prefetch-loop-arrays $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS) -std=gnu89 
+CFLAGS_KERNEL	= -fno-prefetch-loop-arrays $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS)
 AFLAGS_KERNEL	= $(CFLAGS_KERNEL)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
@@ -394,11 +395,11 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks -std=gnu89 $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
-KBUILD_AFLAGS_KERNEL := $(GRAPHITE) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+		   -fno-delete-null-pointer-checks $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE)
+KBUILD_AFLAGS_KERNEL := $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
 KBUILD_CFLAGS_KERNEL := $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
-KBUILD_AFLAGS   := -D__ASSEMBLY__
-KBUILD_AFLAGS_MODULE  := -DMODULE $(GRAPHITE) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_AFLAGS   := -D__ASSEMBLY__ $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_AFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE)
 KBUILD_CFLAGS_MODULE  := -DMODULE $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
@@ -592,11 +593,11 @@ endif # $(dot-config)
 all: vmlinux
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 else
-KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,) $(CFLAGS_KERNEL) 
+KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 endif
@@ -659,7 +660,7 @@ KBUILD_CFLAGS   += $(call cc-option, -fno-var-tracking-assignments)
 
 ifdef CONFIG_DEBUG_INFO
 KBUILD_CFLAGS	+= -g
-KBUILD_AFLAGS	+= -gdwarf-2
+KBUILD_AFLAGS	+= -g
 endif
 
 ifdef CONFIG_DEBUG_INFO_REDUCED
@@ -712,8 +713,8 @@ endif
 
 # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
 KBUILD_CPPFLAGS += $(KCPPFLAGS)
-KBUILD_AFLAGS += $(KAFLAGS)
-KBUILD_CFLAGS += $(KCFLAGS)
+KBUILD_AFLAGS += $(KAFLAGS) $(GRAPHITE)
+KBUILD_CFLAGS += $(KCFLAGS) $(GRAPHITE)
 
 # Use --build-id when available.
 LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\

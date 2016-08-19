@@ -103,7 +103,7 @@
 			      power-domain = <&l2ccc_0>;
 			      qcom,dump-size = <0x0>;		/* A53 L2 dump not supported */
 			      L2_tlb_0: l2-tlb {
-					qcom,dump-size = <0x4000>;
+					qcom,dump-size = <0x0>;
 				};
 			};
 			L1_I_0: l1-icache {
