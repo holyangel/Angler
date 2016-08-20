@@ -50,24 +50,27 @@
 	qcom,mdss-pref-prim-intf = "dsi";
 };
 
-&dsi_dual_jdi_4k_video {
+#include "dsi-panel-jdi-4k-dualmipi0-video.dtsi"
+#include "dsi-panel-jdi-4k-dualmipi1-video.dtsi"
+
+&dsi_dual_jdi_4k_video_0 {
 	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
 	qcom,mdss-dsi-bl-pmic-pwm-frequency = <50>;
 	qcom,mdss-dsi-bl-pmic-bank-select = <3>;
 	qcom,mdss-dsi-pwm-gpio = <&pmi8994_mpps 1 0>;
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,cont-splash-enabled;
+};
+
+&dsi_dual_jdi_4k_video_1 {
+	qcom,cont-splash-enabled;
 };
 
 &mdss_fb0 {
 	qcom,boot-indication-enabled;
 };
 
-&mdss_dsi {
-	hw-config = "split_dsi";
-};
-
 &mdss_dsi0 {
-	qcom,dsi-pref-prim-pan = <&dsi_dual_jdi_4k_video>;
+	qcom,dsi-pref-prim-pan = <&dsi_dual_jdi_4k_video_0>;
 	pinctrl-names = "mdss_default", "mdss_sleep";
 	pinctrl-0 = <&mdss_dsi_active>;
 	pinctrl-1 = <&mdss_dsi_suspend>;
@@ -77,11 +80,12 @@
 	qcom,platform-reset-gpio = <&msm_gpio 78 0>;
 	qcom,platform-bklight-en-gpio = <&pmi8994_gpios 2 0>;
 
+	qcom,dsi-panel-bias-vreg;
 	qcom,regulator-ldo-mode;
 };
 
 &mdss_dsi1 {
-	qcom,dsi-pref-prim-pan = <&dsi_dual_jdi_4k_video>;
+	qcom,dsi-pref-prim-pan = <&dsi_dual_jdi_4k_video_1>;
 
 	vddio-supply = <&pm8994_s4>;
 	qcom,regulator-ldo-mode;
@@ -166,8 +170,8 @@
 	cd-gpios = <&pm8994_gpios 8 0x1>;
 
 	pinctrl-names = "active", "sleep";
-	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
-	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off>;
 
 	qcom,clk-rates = <400000 20000000 25000000 50000000 100000000 200000000>;
 	qcom,bus-speed-mode = "SDR12", "SDR25", "SDR50", "DDR50", "SDR104";
@@ -535,17 +539,9 @@
 	qcom,use-otp-profile;
 };
 
-&usb_otg_switch {
-	status = "disabled";
-};
-
 &pmi8994_charger {
-	/delete-property/ otg-parent-supply;
 	qcom,dc-psy-type = "Wipower";
 	qcom,charge-unknown-battery;
-	smbcharger_charger_otg {
-		parent-supply = <&pmi8994_boost_5v>;
-	};
 };
 
 &slim_msm {
@@ -874,7 +870,6 @@
 };
 
 &spi_epm {
-	status = "ok";
 	epm-adc@1 {
 		compatible = "cy,epm-adc-cy8c5568lti-114";
 		reg = <1>;

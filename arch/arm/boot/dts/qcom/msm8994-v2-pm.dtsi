@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,7 +22,7 @@
 		qcom,saw2-spm-dly = <0X3c100c00>;
 		qcom,saw2-spm-ctl = <0x0>;
 		qcom,cpu-vctl-list = <&CPU0 &CPU1 &CPU2 &CPU3>;
-		qcom,vctl-timeout-us = <500>;
+		qcom,vctl-timeout-us = <50>;
 		qcom,vctl-port = <0x0>;
 		qcom,phase-port = <0x1>;
 		qcom,supports-rpm-hs;
@@ -65,7 +65,7 @@
 		qcom,saw2-spm-dly = <0x3c100c30>;
 		qcom,saw2-spm-ctl = <0x8>;
 		qcom,cpu-vctl-list = <&CPU4 &CPU5 &CPU6 &CPU7>;
-		qcom,vctl-timeout-us = <500>;
+		qcom,vctl-timeout-us = <50>;
 		qcom,vctl-port = <0x0>;
 		qcom,phase-port = <0x1>;
 		qcom,saw2-pmic-data0 = <0x00030000>; /* VDD_APC1 off */
@@ -649,8 +649,11 @@
 
 	};
 
-	qcom,cpu-sleep-status {
+	qcom,cpu-sleep-status@f908b008{
 		compatible = "qcom,cpu-sleep-status";
+		reg = <0xf908b008 0x100>;
+		qcom,cpu-alias-addr = <0x10000>;
+		qcom,sleep-status-mask= <0x80000>;
 	};
 
 	qcom,rpm-log@fc000000 {
@@ -680,16 +683,16 @@
 		qcom,start-offset = <0x190010>;
 	};
 
-	qcom,npa-dump@0xfc190020 {
-		compatible = "qcom,npa-dump";
-		reg = <0xfc190020 0x4>, <0xfc000000 0x1c00>;
-	};
-
 	qcom,rpm-master-stats@fc428150 {
 		compatible = "qcom,rpm-master-stats";
 		reg = <0xfc428150 0x3200>;
-		qcom,masters = "APSS", "MPSS", "LPSS", "PRONTO";
+		qcom,masters = "APSS", "MPSS", "LPSS";
 		qcom,master-stats-version = <2>;
 		qcom,master-offset = <2560>;
+	};
+
+	qcom,npa-dump@0xfc190020 {
+		compatible = "qcom,npa-dump";
+		reg = <0xfc190020 0x4>, <0xfc000000 0x1c00>;
 	};
 };
