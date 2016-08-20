@@ -404,7 +404,7 @@
 	};
 
 	audio_etm0 {
-		compatible = "qcom,coresight-audio-etm";
+		compatible = "qcom,coresight-remote-etm";
 
 		coresight-id = <21>;
 		coresight-name = "coresight-audio-etm0";
@@ -412,10 +412,12 @@
 		coresight-outports = <0>;
 		coresight-child-list = <&funnel_in0>;
 		coresight-child-ports = <2>;
+
+		qcom,inst-id = <5>;
 	};
 
 	modem_etm0 {
-		compatible = "qcom,coresight-modem-etm";
+		compatible = "qcom,coresight-remote-etm";
 
 		coresight-id = <22>;
 		coresight-name = "coresight-modem-etm0";
@@ -423,10 +425,12 @@
 		coresight-outports = <0>;
 		coresight-child-list = <&funnel_in0>;
 		coresight-child-ports = <1>;
+
+		qcom,inst-id = <2>;
 	};
 
 	wcn_etm0 {
-		compatible = "qcom,coresight-wcn-etm";
+		compatible = "qcom,coresight-remote-etm";
 
 		coresight-id = <23>;
 		coresight-name = "coresight-wcn-etm0";
@@ -434,10 +438,12 @@
 		coresight-outports = <0>;
 		coresight-child-list = <&funnel_in1>;
 		coresight-child-ports = <0>;
+
+		qcom,inst-id = <3>;
 	};
 
 	rpm_etm0 {
-		compatible = "qcom,coresight-rpm-etm";
+		compatible = "qcom,coresight-remote-etm";
 
 		coresight-id = <24>;
 		coresight-name = "coresight-rpm-etm0";
@@ -445,6 +451,8 @@
 		coresight-outports = <0>;
 		coresight-child-list = <&funnel_in0>;
 		coresight-child-ports = <0>;
+
+		qcom,inst-id = <4>;
 	};
 
 	csr: csr@fc301000 {
