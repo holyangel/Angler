@@ -23,12 +23,12 @@
 
 #ifdef __KERNEL__
 
-#include <linux/string.h>
 #include <linux/types.h>
 #include <linux/blk_types.h>
 #include <asm/byteorder.h>
 #include <asm/memory.h>
 #include <asm-generic/pci_iomap.h>
+#include <asm/early_ioremap.h>
 #include <linux/msm_rtb.h>
 #include <xen/xen.h>
 
@@ -38,6 +38,12 @@
 #define isa_virt_to_bus virt_to_phys
 #define isa_page_to_bus page_to_phys
 #define isa_bus_to_virt phys_to_virt
+
+/*
+ * Atomic MMIO-wide IO modify
+ */
+extern void atomic_io_modify(void __iomem *reg, u32 mask, u32 set);
+extern void atomic_io_modify_relaxed(void __iomem *reg, u32 mask, u32 set);
 
 /*
  * Generic IO read/write.  These perform native-endian accesses.  Note
@@ -237,6 +243,13 @@ static inline void __iomem *__typesafe_io(unsigned long addr)
 
 /* PCI fixed i/o mapping */
 #define PCI_IO_VIRT_BASE	0xfee00000
+#define PCI_IOBASE		((void __iomem *)PCI_IO_VIRT_BASE)
+
+#if defined(CONFIG_PCI)
+void pci_ioremap_set_mem_type(int mem_type);
+#else
+static inline void pci_ioremap_set_mem_type(int mem_type) {}
+#endif
 
 extern int pci_ioremap_io(unsigned int offset, phys_addr_t phys_addr);
 
@@ -360,6 +373,7 @@ extern void _memset_io(volatile void __iomem *, int, size_t);
 					__raw_readl(c)); __r; })
 #define readq_relaxed(c) ({ u64 __r = le64_to_cpu((__force __le64) \
 					__raw_readq(c)); __r; })
+#define readb_relaxed_no_log(c)	({ u8 __r = __raw_readb_no_log(c); __r; })
 #define readl_relaxed_no_log(c) ({ u32 __r = le32_to_cpu((__force __le32) \
 					__raw_readl_no_log(c)); __r; })
 #define readq_relaxed_no_log(c) ({ u64 __r = le64_to_cpu((__force __le64) \
@@ -370,6 +384,7 @@ extern void _memset_io(volatile void __iomem *, int, size_t);
 #define writew_relaxed(v,c)	__raw_writew((__force u16) cpu_to_le16(v),c)
 #define writel_relaxed(v,c)	__raw_writel((__force u32) cpu_to_le32(v),c)
 #define writeq_relaxed(v,c)	__raw_writeq((__force u64) cpu_to_le64(v),c)
+#define writeb_relaxed_no_log(v, c)	((void)__raw_writeb_no_log((v), (c)))
 #define writel_relaxed_no_log(v, c) __raw_writel_no_log((__force u32) cpu_to_le32(v),c)
 #define writeq_relaxed_no_log(v, c) __raw_writeq_no_log((__force u64) cpu_to_le64(v),c)
 
@@ -391,33 +406,9 @@ extern void _memset_io(volatile void __iomem *, int, size_t);
 #define writesw(p,d,l)		__raw_writesw(p,d,l)
 #define writesl(p,d,l)		__raw_writesl(p,d,l)
 
-#ifndef __ARMBE__
-static inline void memset_io(volatile void __iomem *dst, unsigned c,
-	size_t count)
-{
-	memset((void __force *)dst, c, count);
-}
-#define memset_io(dst,c,count) memset_io(dst,c,count)
-
-static inline void memcpy_fromio(void *to, const volatile void __iomem *from,
-	size_t count)
-{
-	memcpy(to, (const void __force *)from, count);
-}
-#define memcpy_fromio(to,from,count) memcpy_fromio(to,from,count)
-
-static inline void memcpy_toio(volatile void __iomem *to, const void *from,
-	size_t count)
-{
-	memcpy((void __force *)to, from, count);
-}
-#define memcpy_toio(to,from,count) memcpy_toio(to,from,count)
-
-#else
 #define memset_io(c,v,l)	_memset_io(c,(v),(l))
 #define memcpy_fromio(a,c,l)	_memcpy_fromio((a),c,(l))
 #define memcpy_toio(c,a,l)	_memcpy_toio(c,(a),(l))
-#endif
 
 #endif	/* readl */
 

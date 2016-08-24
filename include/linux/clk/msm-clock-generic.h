@@ -123,6 +123,8 @@ struct div_data {
 	 * Skip odd dividers since the hardware may not support them.
 	 */
 	bool skip_odd_div;
+	bool skip_even_div;
+	bool allow_div_one;
 	unsigned int cached_div;
 };
 
@@ -254,6 +256,12 @@ struct mux_div_ops {
 		function pointers for hw specific operations
  * @src_sel
 		the mux index which will be used if the clock is enabled.
+ * @try_get_rate
+		Set if you need the mux to directly jump to a source
+		that is at the desired rate currently.
+ * @force_enable_md
+		Set if the mux-div needs to be force enabled/disabled during
+		clk_enable/disable.
  */
 
 struct mux_div_clk {
@@ -283,6 +291,8 @@ struct mux_div_clk {
 	u32				safe_div;
 	struct clk			*safe_parent;
 	unsigned long			safe_freq;
+	bool				try_get_rate;
+	bool				force_enable_md;
 };
 
 static inline struct mux_div_clk *to_mux_div_clk(struct clk *clk)

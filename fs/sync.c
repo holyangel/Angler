@@ -17,11 +17,6 @@
 #include <linux/backing-dev.h>
 #include "internal.h"
 
-#ifdef CONFIG_DYNAMIC_FSYNC
-extern bool power_suspend_active;
-extern bool dyn_fsync_active;
-#endif
-
 #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
 			SYNC_FILE_RANGE_WAIT_AFTER)
 
@@ -70,7 +65,7 @@ int sync_filesystem(struct super_block *sb)
 		return ret;
 	return __sync_filesystem(sb, 1);
 }
-EXPORT_SYMBOL_GPL(sync_filesystem);
+EXPORT_SYMBOL(sync_filesystem);
 
 static void sync_inodes_one_sb(struct super_block *sb, void *arg)
 {
@@ -93,22 +88,6 @@ static void fdatawait_one_bdev(struct block_device *bdev, void *arg)
 {
 	filemap_fdatawait(bdev->bd_inode->i_mapping);
 }
-
-
-#ifdef CONFIG_DYNAMIC_FSYNC
-/*
- * Sync all the data for all the filesystems (called by sys_sync() and
- * emergency sync)
- */
-void sync_filesystems(int wait)
-{
-	iterate_supers(sync_inodes_one_sb, NULL);
-	iterate_supers(sync_fs_one_sb, &wait);
-	iterate_supers(sync_fs_one_sb, &wait);
-	iterate_bdevs(fdatawrite_one_bdev, NULL);
-	iterate_bdevs(fdatawait_one_bdev, NULL);
-}
-#endif
 
 /*
  * Sync everything. We start by waking flusher threads so that most of
@@ -198,17 +177,9 @@ SYSCALL_DEFINE1(syncfs, int, fd)
  */
 int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
-#ifdef CONFIG_DYNAMIC_FSYNC
-	if (likely(dyn_fsync_active && !power_suspend_active))
-		return 0;
-	else {
-#endif
-	if (!file->f_op || !file->f_op->fsync)
+	if (!file->f_op->fsync)
 		return -EINVAL;
 	return file->f_op->fsync(file, start, end, datasync);
-#ifdef CONFIG_DYNAMIC_FSYNC
-	}
-#endif
 }
 EXPORT_SYMBOL(vfs_fsync_range);
 
@@ -240,11 +211,6 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
-#ifdef CONFIG_DYNAMIC_FSYNC
-	if (likely(dyn_fsync_active && !power_suspend_active))
-		return 0;
-	else
-#endif
 	return do_fsync(fd, 0);
 }
 
@@ -252,23 +218,6 @@ SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
 	return do_fsync(fd, 1);
 }
-
-/**
- * generic_write_sync - perform syncing after a write if file / inode is sync
- * @file:	file to which the write happened
- * @pos:	offset where the write started
- * @count:	length of the write
- *
- * This is just a simple wrapper about our general syncing function.
- */
-int generic_write_sync(struct file *file, loff_t pos, loff_t count)
-{
-	if (!(file->f_flags & O_DSYNC) && !IS_SYNC(file->f_mapping->host))
-		return 0;
-	return vfs_fsync_range(file, pos, pos + count - 1,
-			       (file->f_flags & __O_SYNC) ? 0 : 1);
-}
-EXPORT_SYMBOL(generic_write_sync);
 
 /*
  * sys_sync_file_range() permits finely controlled syncing over a segment of
@@ -320,11 +269,6 @@ EXPORT_SYMBOL(generic_write_sync);
 SYSCALL_DEFINE4(sync_file_range, int, fd, loff_t, offset, loff_t, nbytes,
 				unsigned int, flags)
 {
-#ifdef CONFIG_DYNAMIC_FSYNC
-	if (likely(dyn_fsync_active && !power_suspend_active))
-		return 0;
-	else {
-#endif
 	int ret;
 	struct fd f;
 	struct address_space *mapping;
@@ -403,9 +347,6 @@ out_put:
 	fdput(f);
 out:
 	return ret;
-#ifdef CONFIG_DYNAMIC_FSYNC
-	}
-#endif
 }
 
 /* It would be nice if people remember that not all the world's an i386
@@ -413,10 +354,5 @@ out:
 SYSCALL_DEFINE4(sync_file_range2, int, fd, unsigned int, flags,
 				 loff_t, offset, loff_t, nbytes)
 {
-#ifdef CONFIG_DYNAMIC_FSYNC
-	if (likely(dyn_fsync_active && !power_suspend_active))
-		return 0;
-	else
-#endif
 	return sys_sync_file_range(fd, offset, nbytes, flags);
 }

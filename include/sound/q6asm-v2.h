@@ -17,6 +17,7 @@
 #include <sound/apr_audio-v2.h>
 #include <linux/list.h>
 #include <linux/msm_ion.h>
+#include <linux/spinlock.h>
 
 #define IN                      0x000
 #define OUT                     0x001
@@ -46,6 +47,9 @@
 #define FORMAT_EAC3         0x0014
 #define FORMAT_MP2          0x0015
 #define FORMAT_FLAC         0x0016
+#define FORMAT_ALAC         0x0017
+#define FORMAT_VORBIS       0x0018
+#define FORMAT_APE          0x0019
 
 #define ENCDEC_SBCBITRATE   0x0001
 #define ENCDEC_IMMEDIATE_DECODE 0x0002
@@ -170,6 +174,8 @@ struct audio_client {
 	/* Relative or absolute TS */
 	atomic_t	       time_flag;
 	atomic_t	       nowait_cmd_cnt;
+	struct list_head       no_wait_que;
+	spinlock_t             no_wait_que_spinlock;
 	atomic_t               mem_state;
 	void		       *priv;
 	uint32_t               io_mode;
@@ -187,10 +193,13 @@ struct audio_client {
 	int					   stream_id;
 	struct device *dev;
 	int		       topology;
+	int		       app_type;
 	/* audio cache operations fptr*/
 	int (*fptr_cache_ops)(struct audio_buffer *abuff, int cache_op);
 	atomic_t               unmap_cb_success;
 	atomic_t               reset;
+	/* holds latest DSP pipeline delay */
+	uint32_t               path_delay;
 };
 
 void q6asm_audio_client_free(struct audio_client *ac);
@@ -268,6 +277,8 @@ int q6asm_map_rtac_block(struct rtac_cal_block_data *cal_block);
 
 int q6asm_unmap_rtac_block(uint32_t *mem_map_handle);
 
+int q6asm_send_cal(struct audio_client *ac);
+
 int q6asm_run(struct audio_client *ac, uint32_t flags,
 		uint32_t msw_ts, uint32_t lsw_ts);
 
@@ -308,6 +319,12 @@ int q6asm_enc_cfg_blk_aac(struct audio_client *ac,
 
 int q6asm_enc_cfg_blk_pcm(struct audio_client *ac,
 			uint32_t rate, uint32_t channels);
+
+int q6asm_enc_cfg_blk_pcm_v2(struct audio_client *ac,
+			uint32_t rate, uint32_t channels,
+			uint16_t bits_per_sample,
+			bool use_default_chmap, bool use_back_flavor,
+			u8 *channel_map);
 
 int q6asm_enc_cfg_blk_pcm_format_support(struct audio_client *ac,
 			uint32_t rate, uint32_t channels,
@@ -373,16 +390,25 @@ int q6asm_media_format_block_multi_aac(struct audio_client *ac,
 			struct asm_aac_cfg *cfg);
 
 int q6asm_media_format_block_wma(struct audio_client *ac,
-			void *cfg);
+			void *cfg, int stream_id);
 
 int q6asm_media_format_block_wmapro(struct audio_client *ac,
-			void *cfg);
+			void *cfg, int stream_id);
 
 int q6asm_media_format_block_amrwbplus(struct audio_client *ac,
 			struct asm_amrwbplus_cfg *cfg);
 
 int q6asm_stream_media_format_block_flac(struct audio_client *ac,
 			struct asm_flac_cfg *cfg, int stream_id);
+
+int q6asm_media_format_block_alac(struct audio_client *ac,
+			struct asm_alac_cfg *cfg, int stream_id);
+
+int q6asm_stream_media_format_block_vorbis(struct audio_client *ac,
+			struct asm_vorbis_cfg *cfg, int stream_id);
+
+int q6asm_media_format_block_ape(struct audio_client *ac,
+			struct asm_ape_cfg *cfg, int stream_id);
 
 int q6asm_ds1_set_endp_params(struct audio_client *ac,
 				int param_id, int param_value);
@@ -421,6 +447,10 @@ int q6asm_set_softvolume_v2(struct audio_client *ac,
 /* Send left-right channel gain */
 int q6asm_set_lrgain(struct audio_client *ac, int left_gain, int right_gain);
 
+/* Send multi channel gain */
+int q6asm_set_multich_gain(struct audio_client *ac, uint32_t channels,
+			   uint32_t *gains, uint8_t *ch_map, bool use_default);
+
 /* Enable Mute/unmute flag */
 int q6asm_set_mute(struct audio_client *ac, int muteflag);
 
@@ -447,12 +477,14 @@ int q6asm_send_meta_data(struct audio_client *ac, uint32_t initial_samples,
 int q6asm_stream_send_meta_data(struct audio_client *ac, uint32_t stream_id,
 		uint32_t initial_samples, uint32_t trailing_samples);
 
-/* Get current ASM topology */
-int q6asm_get_asm_topology(void);
+int q6asm_get_asm_topology(int session_id);
+int q6asm_get_asm_app_type(int session_id);
 
 int q6asm_send_mtmx_strtr_window(struct audio_client *ac,
 		struct asm_session_mtmx_strtr_param_window_v2_t *window_param,
 		uint32_t param_id);
 
+/* Retrieve the current DSP path delay */
+int q6asm_get_path_delay(struct audio_client *ac);
 
 #endif /* __Q6_ASM_H__ */
