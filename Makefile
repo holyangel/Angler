@@ -242,9 +242,9 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 	  
 GRAPHITE	= -fgraphite -fgraphite-identity -floop-nest-optimize
-EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -finline-functions -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre  -fgcse-after-reload\
-                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model=dynamic -fsimd-cost-model=dynamic -fira-region=all -fira-hoist-pressure -fivopts -fno-tree-ter -ftree-vectorize \
-		  -fprofile-correction -fbranch-target-load-optimize2 -fipa-pta -flive-range-shrinkage
+EXTRA_OPTS	= -fmodulo-sched -fmodulo-sched-allow-regmoves -finline-functions -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -ftree-partial-pre  -fgcse-after-reload\
+                  -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fira-region=all -fira-hoist-pressure -fivopts -fno-tree-ter -ftree-vectorize \
+		  -fprofile-correction -fbranch-target-load-optimize2 -fipa-pta
 
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
