@@ -280,7 +280,7 @@
 
 /* GPU overrides */
 &msm_gpu {
-	qcom,initial-pwrlevel = <4>;
+	qcom,initial-pwrlevel = <7>;
 	qcom,msm-bus,num-cases = <10>;
 	qcom,msm-bus,vectors-KBps =
 		<26 512 0 0>,
@@ -303,7 +303,7 @@
 
 		qcom,gpu-pwrlevel@0 {
 			reg = <0>;
-			qcom,gpu-freq = <600000000>;
+			qcom,gpu-freq = <630000000>;
 			qcom,bus-freq = <8>;
 			qcom,bus-min = <7>;
 			qcom,bus-max = <9>;
@@ -350,6 +350,13 @@
 		qcom,gpu-pwrlevel@6 {
 			reg = <6>;
 			qcom,gpu-freq = <27000000>;
+			qcom,bus-freq = <1>;
+			qcom,bus-min = <1>;
+			qcom,bus-max = <2>;
+		};
+		qcom,gpu-pwrlevel@7 {
+			reg = <7>;
+			qcom,gpu-freq = <27000000>;
 			qcom,bus-freq = <0>;
 			qcom,bus-min = <0>;
 			qcom,bus-max = <0>;
@@ -364,15 +371,16 @@
 	 */
 	qcom,ocmem-bus-client {
                 qcom,msm-bus,name = "gpu-ocmem";
-                qcom,msm-bus,num-cases = <7>;
+                qcom,msm-bus,num-cases = <8>;
                 qcom,msm-bus,num-paths = <1>;
                 qcom,msm-bus,vectors-KBps =
-			<89 662 0 9600000>, /* gpu= 600 */
+			<89 662 0 9600000>, /* gpu= 630 */
 			<89 662 0 8160000>, /* gpu= 510 */
 			<89 662 0 7200000>, /* gpu= 450 */
 			<89 662 0 6240000>, /* gpu= 390 */
 			<89 662 0 4880000>, /* gpu= 305 */
 			<89 662 0 2880000>, /* gpu= 180 */
+			<89 662 0 880000>, /* gpu= 27 */
 			<89 662 0 0>;
 	};
 };
