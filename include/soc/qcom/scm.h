@@ -25,9 +25,7 @@
 #define SCM_SVC_DCVS			0xD
 #define SCM_SVC_ES			0x10
 #define SCM_SVC_HDCP			0x11
-#define SCM_SVC_MDTP			0x12
 #define SCM_SVC_LMH			0x13
-#define SCM_SVC_SMMU_PROGRAM		0x15
 #define SCM_SVC_TZSCHEDULER		0xFC
 
 #define SCM_FUSE_READ			0x7
@@ -46,7 +44,6 @@ static char __n[PAGE_SIZE] __aligned(PAGE_SIZE);
 #define SCM_SIP_FNID(s, c) (((((s) & 0xFF) << 8) | ((c) & 0xFF)) | 0x02000000)
 #define SCM_QSEEOS_FNID(s, c) (((((s) & 0xFF) << 8) | ((c) & 0xFF)) | \
 			      0x32000000)
-#define SCM_SVC_ID(s) (((s) & 0xFF00) >> 8)
 
 #define MAX_SCM_ARGS 10
 #define MAX_SCM_RETS 3
@@ -131,8 +128,6 @@ struct scm_hdcp_req {
 	u32 addr;
 	u32 val;
 };
-
-extern struct mutex scm_lmh_lock;
 
 #else
 

@@ -40,17 +40,6 @@ enum {
 	ADM_MAX_CAL_TYPES
 };
 
-enum {
-	ADM_MEM_MAP_INDEX_SOURCE_TRACKING = ADM_MAX_CAL_TYPES,
-	ADM_MEM_MAP_INDEX_MAX
-};
-
-enum {
-	ADM_CLIENT_ID_DEFAULT = 0,
-	ADM_CLIENT_ID_SOURCE_TRACKING,
-	ADM_CLIENT_ID_MAX,
-};
-
 #define MAX_COPPS_PER_PORT 0x8
 #define ADM_MAX_CHANNELS 8
 
@@ -74,13 +63,8 @@ int adm_dts_eagle_set(int port_id, int copp_idx, int param_id,
 int adm_dts_eagle_get(int port_id, int copp_idx, int param_id,
 		      void *data, uint32_t size);
 
-void adm_copp_mfc_cfg(int port_id, int copp_idx, int dst_sample_rate);
-
 int adm_get_params(int port_id, int copp_idx, uint32_t module_id,
 		   uint32_t param_id, uint32_t params_length, char *params);
-
-int adm_send_params_v5(int port_id, int copp_idx, char *params,
-			      uint32_t params_length);
 
 int adm_dolby_dap_send_params(int port_id, int copp_idx, char *params,
 			      uint32_t params_length);
@@ -147,10 +131,4 @@ int adm_store_cal_data(int port_id, int copp_idx, int path, int perf_mode,
 int adm_send_compressed_device_mute(int port_id, int copp_idx, bool mute_on);
 
 int adm_send_compressed_device_latency(int port_id, int copp_idx, int latency);
-int adm_set_sound_focus(int port_id, int copp_idx,
-			struct sound_focus_param soundFocusData);
-int adm_get_sound_focus(int port_id, int copp_idx,
-			struct sound_focus_param *soundFocusData);
-int adm_get_source_tracking(int port_id, int copp_idx,
-			    struct source_tracking_param *sourceTrackingData);
 #endif /* __Q6_ADM_V2_H__ */

@@ -3,6 +3,7 @@
  *
  * Copyright (C) 1995-1999 Russell King
  * Copyright (C) 2012 ARM Ltd.
+ * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -33,12 +34,13 @@
 #include <asm/hw_breakpoint.h>
 #include <asm/ptrace.h>
 #include <asm/types.h>
+#include <asm/relaxed.h>
 
 #ifdef __KERNEL__
 #define STACK_TOP_MAX		TASK_SIZE_64
 #ifdef CONFIG_COMPAT
 #define AARCH32_VECTORS_BASE	0xffff0000
-#define STACK_TOP		(test_thread_flag(TIF_32BIT) ? \
+#define STACK_TOP		(test_thread_flag_relaxed(TIF_32BIT) ? \
 				AARCH32_VECTORS_BASE : STACK_TOP_MAX)
 #else
 #define STACK_TOP		STACK_TOP_MAX
@@ -132,7 +134,8 @@ extern void release_thread(struct task_struct *);
 unsigned long get_wchan(struct task_struct *p);
 
 #define cpu_relax()			barrier()
-#define cpu_relax_lowlatency()                cpu_relax()
+
+#define cpu_read_relax()		wfe()
 
 /* Thread switching */
 extern struct task_struct *cpu_switch_to(struct task_struct *prev,
@@ -141,8 +144,20 @@ extern struct task_struct *cpu_switch_to(struct task_struct *prev,
 #define task_pt_regs(p) \
 	((struct pt_regs *)(THREAD_START_SP + task_stack_page(p)) - 1)
 
-#define KSTK_EIP(tsk)	((unsigned long)task_pt_regs(tsk)->pc)
-#define KSTK_ESP(tsk)	user_stack_pointer(task_pt_regs(tsk))
+#define KSTK_EIP(tsk)	task_pt_regs(tsk)->pc
+#ifndef CONFIG_COMPAT
+#define KSTK_ESP(tsk)	task_pt_regs(tsk)->sp
+#else
+#define KSTK_ESP(tsk)					\
+({							\
+	u64 ptr;					\
+	if (is_compat_thread(task_thread_info(tsk)))	\
+		ptr = task_pt_regs(tsk)->compat_sp;	\
+	else						\
+		ptr = task_pt_regs(tsk)->sp;		\
+	ptr;						\
+})
+#endif
 
 /*
  * Prefetching support
@@ -168,5 +183,7 @@ static inline void spin_lock_prefetch(const void *x)
 #define HAVE_ARCH_PICK_MMAP_LAYOUT
 
 #endif
+
+#include <asm-generic/processor.h>
 
 #endif /* __ASM_PROCESSOR_H */

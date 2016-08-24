@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 Google, Inc.
- * Copyright (c) 2009-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
  * Author: San Mehat <san@android.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -25,7 +25,7 @@
 #if !defined(CONFIG_SMP)
 #define msm_secondary_startup NULL
 #elif defined(CONFIG_CPU_V7)
-#define msm_secondary_startup secondary_startup
+extern void msm_secondary_startup(void);
 #else
 #define msm_secondary_startup secondary_holding_pen
 #endif
@@ -35,7 +35,6 @@ enum msm_pm_sleep_mode {
 	MSM_PM_SLEEP_MODE_RETENTION,
 	MSM_PM_SLEEP_MODE_POWER_COLLAPSE_STANDALONE,
 	MSM_PM_SLEEP_MODE_POWER_COLLAPSE,
-	MSM_PM_SLEEP_MODE_FASTPC,
 	MSM_PM_SLEEP_MODE_POWER_COLLAPSE_SUSPEND,
 	MSM_PM_SLEEP_MODE_NR,
 	MSM_PM_SLEEP_MODE_NOT_SELECTED,
@@ -44,8 +43,8 @@ enum msm_pm_sleep_mode {
 enum msm_pm_l2_scm_flag {
 	MSM_SCM_L2_ON = 0,
 	MSM_SCM_L2_OFF = 1,
-	MSM_SCM_L2_GDHS = 2,
-	MSM_SCM_L3_PC_OFF = 4,
+	MSM_SCM_L2_RET = 2,
+	MSM_SCM_L2_GDHS = 3,
 };
 
 #define MSM_PM_MODE(cpu, mode_nr)  ((cpu) * MSM_PM_SLEEP_MODE_NR + (mode_nr))
@@ -59,6 +58,7 @@ struct msm_pm_time_params {
 
 struct msm_pm_sleep_status_data {
 	void *base_addr;
+	uint32_t cpu_offset;
 	uint32_t mask;
 };
 

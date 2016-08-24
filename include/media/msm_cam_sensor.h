@@ -33,13 +33,10 @@
 #define MSM_ACTUATOR_MOVE_SIGNED_FAR -1
 #define MSM_ACTUATOR_MOVE_SIGNED_NEAR  1
 
-#define MAX_ACTUATOR_REGION  5
-
 #define MAX_EEPROM_NAME 32
 
 #define MAX_AF_ITERATIONS 3
 #define MAX_NUMBER_OF_STEPS 47
-#define MAX_REGULATOR 5
 
 #define MSM_V4L2_PIX_FMT_META v4l2_fourcc('M', 'E', 'T', 'A') /* META */
 #define MSM_V4L2_PIX_FMT_SBGGR14 v4l2_fourcc('B', 'G', '1', '4')
@@ -88,7 +85,6 @@ enum sensor_sub_module_t {
 	SUB_MODULE_CSIPHY,
 	SUB_MODULE_CSIPHY_3D,
 	SUB_MODULE_OIS,
-	SUB_MODULE_EXT,
 	SUB_MODULE_MAX,
 };
 
@@ -151,7 +147,6 @@ enum {
 enum csid_cfg_type_t {
 	CSID_INIT,
 	CSID_CFG,
-	CSID_TESTMODE_CFG,
 	CSID_RELEASE,
 };
 
@@ -185,7 +180,6 @@ struct msm_camera_i2c_array_write_config {
 struct msm_camera_i2c_read_config {
 	uint16_t slave_addr;
 	uint16_t reg_addr;
-	enum msm_camera_i2c_reg_addr_type addr_type;
 	enum msm_camera_i2c_data_type data_type;
 	uint16_t data;
 };
@@ -236,7 +230,6 @@ struct sensorb_cfg_data {
 		struct msm_sensor_info_t      sensor_info;
 		struct msm_sensor_init_params sensor_init_params;
 		void                         *setting;
-		struct msm_sensor_i2c_sync_params sensor_i2c_sync_params;
 	} cfg;
 };
 
@@ -245,7 +238,6 @@ struct csid_cfg_data {
 	union {
 		uint32_t csid_version;
 		struct msm_camera_csid_params *csid_params;
-		struct msm_camera_csid_testmode_parms *csid_testmode_params;
 	} cfg;
 };
 
@@ -263,7 +255,6 @@ enum eeprom_cfg_type_t {
 	CFG_EEPROM_READ_CAL_DATA,
 	CFG_EEPROM_WRITE_DATA,
 	CFG_EEPROM_GET_MM_INFO,
-	CFG_EEPROM_INIT,
 };
 
 struct eeprom_get_t {
@@ -286,12 +277,6 @@ struct eeprom_get_cmm_t {
 	uint32_t cmm_size;
 };
 
-struct msm_eeprom_info_t {
-	struct msm_sensor_power_setting_array *power_setting_array;
-	enum i2c_freq_mode_t i2c_freq_mode;
-	struct msm_eeprom_memory_map_array *mem_map_array;
-};
-
 struct msm_eeprom_cfg_data {
 	enum eeprom_cfg_type_t cfgtype;
 	uint8_t is_supported;
@@ -301,7 +286,6 @@ struct msm_eeprom_cfg_data {
 		struct eeprom_read_t read_data;
 		struct eeprom_write_t write_data;
 		struct eeprom_get_cmm_t get_cmm_data;
-		struct msm_eeprom_info_t eeprom_info;
 	} cfg;
 };
 
@@ -338,7 +322,7 @@ struct msm_camera_sensor_slave_info32 {
 	struct msm_sensor_power_setting_array32 power_setting_array;
 	uint8_t  is_init_params_valid;
 	struct msm_sensor_init_params sensor_init_params;
-	enum msm_sensor_output_format_t output_format;
+	uint8_t is_flash_supported;
 };
 
 struct msm_camera_csid_lut_params32 {
@@ -353,7 +337,6 @@ struct msm_camera_csid_params32 {
 	uint8_t phy_sel;
 	uint32_t csi_clk;
 	struct msm_camera_csid_lut_params32 lut_params;
-	uint8_t csi_3p_sel;
 };
 
 struct msm_camera_csi2_params32 {
@@ -367,7 +350,6 @@ struct csid_cfg_data32 {
 	union {
 		uint32_t csid_version;
 		compat_uptr_t csid_params;
-		compat_uptr_t csid_testmode_params;
 	} cfg;
 };
 
@@ -381,12 +363,6 @@ struct eeprom_write_t32 {
 	uint32_t num_bytes;
 };
 
-struct msm_eeprom_info_t32 {
-	compat_uptr_t power_setting_array;
-	enum i2c_freq_mode_t i2c_freq_mode;
-	compat_uptr_t mem_map_array;
-};
-
 struct msm_eeprom_cfg_data32 {
 	enum eeprom_cfg_type_t cfgtype;
 	uint8_t is_supported;
@@ -395,7 +371,6 @@ struct msm_eeprom_cfg_data32 {
 		struct eeprom_get_t get_data;
 		struct eeprom_read_t32 read_data;
 		struct eeprom_write_t32 write_data;
-		struct msm_eeprom_info_t32 eeprom_info;
 	} cfg;
 };
 
@@ -434,10 +409,6 @@ enum msm_sensor_cfg_type_t {
 	CFG_SET_AUTOFOCUS,
 	CFG_CANCEL_AUTOFOCUS,
 	CFG_SET_STREAM_TYPE,
-	CFG_SET_I2C_SYNC_PARAM,
-	CFG_WRITE_I2C_ARRAY_ASYNC,
-	CFG_WRITE_I2C_ARRAY_SYNC,
-	CFG_WRITE_I2C_ARRAY_SYNC_BLOCK,
 };
 
 enum msm_actuator_cfg_type_t {
@@ -471,16 +442,12 @@ struct reg_settings_ois_t {
 	enum msm_camera_i2c_data_type data_type;
 	enum msm_ois_i2c_operation i2c_operation;
 	uint32_t delay;
-#define OIS_REG_DATA_SEQ_MAX 128
-    unsigned char reg_data_seq[OIS_REG_DATA_SEQ_MAX];
-    uint32_t reg_data_seq_size;
 };
 
 struct msm_ois_params_t {
 	uint16_t data_size;
 	uint16_t setting_size;
 	uint32_t i2c_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	enum msm_camera_i2c_reg_addr_type i2c_addr_type;
 	enum msm_camera_i2c_data_type i2c_data_type;
 	struct reg_settings_ois_t *settings;
@@ -520,7 +487,6 @@ struct msm_actuator_params_t {
 	uint16_t data_size;
 	uint16_t init_setting_size;
 	uint32_t i2c_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	enum msm_actuator_addr_type i2c_addr_type;
 	enum msm_actuator_data_type i2c_data_type;
 	struct msm_actuator_reg_params_t *reg_tbl_params;
@@ -605,7 +571,6 @@ struct msm_camera_led_cfg_t {
 struct msm_flash_init_info_t {
 	enum msm_flash_driver_type flash_driver_type;
 	uint32_t slave_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	struct msm_sensor_power_setting_array *power_setting_array;
 	struct msm_camera_i2c_reg_setting_array *settings;
 };
@@ -681,11 +646,6 @@ struct msm_camera_i2c_reg_setting32 {
 	uint16_t delay;
 };
 
-struct msm_camera_i2c_array_write_config32 {
-	struct msm_camera_i2c_reg_setting32 conf_array;
-	uint16_t slave_addr;
-};
-
 struct msm_actuator_tuning_params_t32 {
 	int16_t initial_code;
 	uint16_t pwd_step;
@@ -700,7 +660,6 @@ struct msm_actuator_params_t32 {
 	uint16_t data_size;
 	uint16_t init_setting_size;
 	uint32_t i2c_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	enum msm_actuator_addr_type i2c_addr_type;
 	enum msm_actuator_data_type i2c_data_type;
 	compat_uptr_t reg_tbl_params;
@@ -757,7 +716,6 @@ struct sensorb_cfg_data32 {
 		struct msm_sensor_info_t      sensor_info;
 		struct msm_sensor_init_params sensor_init_params;
 		compat_uptr_t                 setting;
-		struct msm_sensor_i2c_sync_params sensor_i2c_sync_params;
 	} cfg;
 };
 
@@ -765,7 +723,6 @@ struct msm_ois_params_t32 {
 	uint16_t data_size;
 	uint16_t setting_size;
 	uint32_t i2c_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	enum msm_camera_i2c_reg_addr_type i2c_addr_type;
 	enum msm_camera_i2c_data_type i2c_data_type;
 	compat_uptr_t settings;
@@ -786,7 +743,6 @@ struct msm_ois_cfg_data32 {
 struct msm_flash_init_info_t32 {
 	enum msm_flash_driver_type flash_driver_type;
 	uint32_t slave_addr;
-	enum i2c_freq_mode_t i2c_freq_mode;
 	compat_uptr_t power_setting_array;
 	compat_uptr_t settings;
 };

@@ -37,6 +37,8 @@ static ssize_t write_pmsg(struct file *file, const char __user *buf,
 	if (buffer_size > PMSG_MAX_BOUNCE_BUFFER_SIZE)
 		buffer_size = PMSG_MAX_BOUNCE_BUFFER_SIZE;
 	buffer = vmalloc(buffer_size);
+	if (!buffer)
+		return -ENOMEM;
 
 	mutex_lock(&pmsg_lock);
 	for (i = 0; i < count; ) {
@@ -50,7 +52,7 @@ static ssize_t write_pmsg(struct file *file, const char __user *buf,
 			vfree(buffer);
 			return -EFAULT;
 		}
-		psinfo->write_buf(PSTORE_TYPE_PMSG, 0, &id, 0, buffer, 0, c,
+		psinfo->write_buf(PSTORE_TYPE_PMSG, 0, &id, 0, buffer, c,
 				  psinfo);
 
 		i += c;
