@@ -354,6 +354,7 @@ config ARM64_ERRATUM_845719
 
 config ARM64_A57_ERRATA_832075
 	bool "ARMv8 A57 Errata 832075"
+	default y
 	help
 	  This Erratum explains the problem that a Cortex-A57 might deadlock
 	  when WB exclusive load/store instructions are mixed with device loads.
