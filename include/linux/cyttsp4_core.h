@@ -189,6 +189,7 @@ struct cyttsp4_loader_platform_data {
 	char const *tp_product_family;
 } __packed;
 
+struct device;
 typedef int (*cyttsp4_platform_read) (struct device * dev, u16 addr,
 				      void *buf, int size);
 
