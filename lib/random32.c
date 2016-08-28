@@ -126,6 +126,45 @@ void prandom_bytes(void *buf, int bytes)
 }
 EXPORT_SYMBOL(prandom_bytes);
 
+<<<<<<< HEAD
+=======
+static void prandom_warmup(struct rnd_state *state)
+{
+	/* Calling RNG ten times to satisfy recurrence condition */
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+	prandom_u32_state(state);
+}
+
+static u32 __extract_hwseed(void)
+{
+	unsigned int val = 0;
+
+	(void)(arch_get_random_seed_int(&val) ||
+	       arch_get_random_int(&val));
+
+	return val;
+}
+
+static void prandom_seed_early(struct rnd_state *state, u32 seed,
+			       bool mix_with_hwseed)
+{
+#define LCG(x)	 ((x) * 69069U)	/* super-duper LCG */
+#define HWSEED() (mix_with_hwseed ? __extract_hwseed() : 0)
+	state->s1 = __seed(HWSEED() ^ LCG(seed),        2U);
+	state->s2 = __seed(HWSEED() ^ LCG(state->s1),   8U);
+	state->s3 = __seed(HWSEED() ^ LCG(state->s2),  16U);
+	state->s4 = __seed(HWSEED() ^ LCG(state->s3), 128U);
+}
+
+>>>>>>> d40578a... random: Backport driver from 4.1.31
 /**
  *	prandom_seed - add entropy to pseudo random number generator
  *	@seed: seed value
@@ -174,6 +213,32 @@ static int __init prandom_init(void)
 }
 core_initcall(prandom_init);
 
+static void __prandom_timer(unsigned long dontcare);
+
+static DEFINE_TIMER(seed_timer, __prandom_timer, 0, 0);
+
+static void __prandom_timer(unsigned long dontcare)
+{
+	u32 entropy;
+	unsigned long expires;
+
+	get_random_bytes(&entropy, sizeof(entropy));
+	prandom_seed(entropy);
+
+	/* reseed every ~60 seconds, in [40 .. 80) interval with slack */
+	expires = 40 + prandom_u32_max(40);
+	seed_timer.expires = jiffies + msecs_to_jiffies(expires * MSEC_PER_SEC);
+
+	add_timer(&seed_timer);
+}
+
+static void __init __prandom_start_seed_timer(void)
+{
+	set_timer_slack(&seed_timer, HZ);
+	seed_timer.expires = jiffies + msecs_to_jiffies(40 * MSEC_PER_SEC);
+	add_timer(&seed_timer);
+}
+
 /*
  *	Generate better values after random number generator
  *	is fully initialized.
@@ -187,9 +252,11 @@ static int __init prandom_reseed(void)
 		u32 seeds[3];
 
 		get_random_bytes(&seeds, sizeof(seeds));
-		state->s1 = __seed(seeds[0], 2);
-		state->s2 = __seed(seeds[1], 8);
-		state->s3 = __seed(seeds[2], 16);
+
+		state->s1 = __seed(seeds[0],   2U);
+		state->s2 = __seed(seeds[1],   8U);
+		state->s3 = __seed(seeds[2],  16U);
+		state->s4 = __seed(seeds[3], 128U);
 
 		/* mix it in */
 		prandom_u32_state(state);
