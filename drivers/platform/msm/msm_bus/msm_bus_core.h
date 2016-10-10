@@ -330,7 +330,7 @@ static inline void msm_bus_dbg_client_data(struct msm_bus_scale_pdata *pdata,
 }
 static inline void msm_bus_dbg_commit_data(const char *fabname,
 	void *cdata, int nmasters, int nslaves, int ntslaves,
-	int op)
+	int op);
 {
 }
 static inline void void msm_bus_dbg_remove_client
