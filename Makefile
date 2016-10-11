@@ -247,7 +247,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize 
 
 # Extra GCC Optimizations	  
-EXTRA_OPTS	:= -fmodulo-sched -fmodulo-sched-allow-regmoves -finline-functions \
+EXTRA_OPTS	:= -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-align-functions -fno-align-loops \
 				-ftree-partial-pre  -fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
                 -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning \
 				-fprofile-correction -fbranch-target-load-optimize2 -fipa-pta \
@@ -257,8 +257,7 @@ EXTRA_OPTS	:= -fmodulo-sched -fmodulo-sched-allow-regmoves -finline-functions \
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
 ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 \
-				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=2048 
-				
+				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=2048
 
 # Optional
 GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
@@ -270,7 +269,7 @@ GEN_OPT_FLAGS := $(call cc-option,-march=armv8-a) \
 HOSTCC       := gcc
 HOSTCXX      := g++
 HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
-HOSTCXXFLAGS := -O2 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -mfpu=softvfp+vfp -fdeclone-ctor-dtor
+HOSTCXXFLAGS := -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -fdeclone-ctor-dtor
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -607,7 +606,7 @@ KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE)
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 else
-KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_CFLAGS	+= -O3 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
 endif
