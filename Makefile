@@ -251,7 +251,8 @@ EXTRA_OPTS	:= -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-align-functions 
 				-ftree-partial-pre  -fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
                 -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning \
 				-fprofile-correction -fbranch-target-load-optimize2 -fipa-pta \
-                -fira-region=all -fira-hoist-pressure -fno-tree-ter -ftree-vectorize 
+                -fira-region=all -fira-hoist-pressure -fno-tree-ter -ftree-vectorize \
+                -fno-align-jumps -fno-align-labels
 				
 # Arm Architecture Specific
 # fall back to -march=armv8-a in case the compiler isn't compatible
