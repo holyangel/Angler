@@ -126,6 +126,8 @@ void prandom_bytes(void *buf, int bytes)
 }
 EXPORT_SYMBOL(prandom_bytes);
 
+<<<<<<< HEAD
+=======
 static void prandom_warmup(struct rnd_state *state)
 {
 	/* Calling RNG ten times to satisfy recurrence condition */
@@ -145,7 +147,8 @@ static u32 __extract_hwseed(void)
 {
 	unsigned int val = 0;
 
-	(void)(arch_get_random_int(&val));
+	(void)(arch_get_random_seed_int(&val) ||
+	       arch_get_random_int(&val));
 
 	return val;
 }
@@ -161,6 +164,7 @@ static void prandom_seed_early(struct rnd_state *state, u32 seed,
 	state->s4 = __seed(HWSEED() ^ LCG(state->s3), 128U);
 }
 
+>>>>>>> d40578a... random: Backport driver from 4.1.31
 /**
  *	prandom_seed - add entropy to pseudo random number generator
  *	@seed: seed value
@@ -247,7 +251,7 @@ static int __init prandom_reseed(void)
 		struct rnd_state *state = &per_cpu(net_rand_state,i);
 		u32 seeds[3];
 
-		erandom_get_random_bytes((char *)&seeds, sizeof(seeds));
+		get_random_bytes(&seeds, sizeof(seeds));
 
 		state->s1 = __seed(seeds[0],   2U);
 		state->s2 = __seed(seeds[1],   8U);
