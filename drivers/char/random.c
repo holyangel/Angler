@@ -779,7 +779,7 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned num)
 	preempt_disable();
 
 	sample.jiffies = jiffies;
-	sample.cycles = random_get_entropy();
+	sample.cycles = get_cycles();
 	sample.num = num;
 	r = nonblocking_pool.initialized ? &input_pool : &nonblocking_pool;
 	mix_pool_bytes(r, &sample, sizeof(sample));
@@ -1731,7 +1731,7 @@ unsigned int get_random_int(void)
 
 	hash = get_cpu_var(get_random_int_hash);
 
-	hash[0] += current->pid + jiffies + random_get_entropy();
+	hash[0] += current->pid + jiffies + get_cycles();
 	md5_transform(hash, random_int_secret);
 	ret = hash[0];
 	put_cpu_var(get_random_int_hash);
