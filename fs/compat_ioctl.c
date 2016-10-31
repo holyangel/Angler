@@ -808,7 +808,7 @@ static int compat_ioctl_preallocate(struct file *file,
  * simple reversible transform to make our table more evenly
  * distributed after sorting.
  */
-#define XFORM(i) (((i) ^ ((i) << 27) ^ ((i) << 17)) & 0xffffffff)
+#define XFORM(i) (((i) ^ ((i) << 20) ^ ((i) << 17)) & 0xffffffff)
 
 #define COMPATIBLE_IOCTL(cmd) XFORM(cmd),
 /* ioctl should not be warned about even if it's not implemented.
