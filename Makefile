@@ -247,7 +247,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize 
 
 # Extra GCC Optimizations	  
-EXTRA_OPTS	:= -falign-functions=1 -falign-loops=16 -falign-jumps=1 -falign-labels=1 \
+EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels=1 \
 				-ftree-partial-pre  -fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
                 -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning \
 				-fprofile-correction -fbranch-target-load-optimize2 -fipa-pta \
@@ -364,7 +364,7 @@ OBJCOPY		= $(CROSS_COMPILE)objcopy
 OBJDUMP		= $(CROSS_COMPILE)objdump
 AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
-INSTALLKERNEL  = installkernel
+INSTALLKERNEL  := installkernel
 DEPMOD		= /sbin/depmod
 PERL		= perl
 CHECK		= sparse
