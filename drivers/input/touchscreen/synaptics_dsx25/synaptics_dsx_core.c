@@ -3918,7 +3918,6 @@ static void synaptics_rmi4_wakeup_gesture(struct synaptics_rmi4_data *rmi4_data,
 	return;
 }
 
-#ifdef CONFIG_WAKE_GESTURES
 static void synaptics_rmi4_s2w_mode(struct synaptics_rmi4_data *rmi4_data,
 		bool enable)
 {
@@ -3966,7 +3965,6 @@ static void synaptics_rmi4_s2w_mode(struct synaptics_rmi4_data *rmi4_data,
 
 	return;
 }
-#endif
 
 static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 {
