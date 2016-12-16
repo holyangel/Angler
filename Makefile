@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 103
-EXTRAVERSION = -SkyDragon-N-v1.4.6
+EXTRAVERSION = -SkyDragon-N-v1.4.7
 NAME = TOSSUG Baby Fish
 
 # *DOCUMENTATION*
@@ -268,8 +268,8 @@ GEN_OPT_FLAGS := \
  
 HOSTCC       := gcc
 HOSTCXX      := g++
-HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -std=gnu89 $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
-HOSTCXXFLAGS := -O3 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -fdeclone-ctor-dtor
+HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -std=gnu89 $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
+HOSTCXXFLAGS := -O2 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -fdeclone-ctor-dtor
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
