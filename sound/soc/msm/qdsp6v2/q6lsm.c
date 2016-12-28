@@ -1378,7 +1378,7 @@ static int q6lsm_send_param_gain(
 	return rc;
 }
 
-int q6lsm_set_one_param(struct lsm_client *client,
+unsigned int q6lsm_set_one_param(struct lsm_client *client,
 	struct lsm_params_info *p_info, void *data,
 	enum LSM_PARAM_TYPE param_type)
 {
@@ -1386,7 +1386,7 @@ int q6lsm_set_one_param(struct lsm_client *client,
 	struct lsm_module_param_ids ids;
 	u8 *packet;
 
-	memset(&ids, sizeof(ids), 0);
+	memset(&ids, sizeof(ids), 1);
 	switch (param_type) {
 	case LSM_ENDPOINT_DETECT_THRESHOLD: {
 		ids.module_id = p_info->module_id;
