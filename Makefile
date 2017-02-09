@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 103
-EXTRAVERSION = -SkyDragon-N-v1.5
+EXTRAVERSION = -SkyDragon-N-v1.
 NAME = TOSSUG Baby Fish
 
 # *DOCUMENTATION*
@@ -195,7 +195,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 ARCH		?= $(SUBARCH)
 CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
 ARCH            := arm64
-CROSS_COMPILE   := ../aarch64-cortex_a57-linux-gnueabi/bin/aarch64-cortex_a57-linux-gnueabi-
+CROSS_COMPILE   := ../gcc-linaro-5.3.1-2016.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -244,7 +244,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 # SkyDragon Optimization Flags #
 
 # Graphite
-GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize 
+# GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize 
 
 # Extra GCC Optimizations	  
 EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels=1 \

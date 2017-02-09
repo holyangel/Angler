@@ -22,6 +22,8 @@
 #define TRACE_INCLUDE_FILE adreno_trace
 
 #include <linux/tracepoint.h>
+#include "adreno_a3xx.h"
+#include "adreno_a4xx.h"
 
 TRACE_EVENT(adreno_cmdbatch_queued,
 	TP_PROTO(struct kgsl_cmdbatch *cmdbatch, unsigned int queued),
