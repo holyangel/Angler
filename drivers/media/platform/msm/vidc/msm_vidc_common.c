@@ -657,9 +657,9 @@ static void handle_session_init_done(enum command_response cmd, void *data)
 static void handle_event_change(enum command_response cmd, void *data)
 {
 	struct msm_vidc_cb_cmd_done *response = data;
-	struct msm_vidc_inst *inst;
+	struct msm_vidc_inst *inst = NULL;
 	struct v4l2_control control = {0};
-	struct msm_vidc_cb_event *event_notify;
+	struct msm_vidc_cb_event *event_notify = data;
 	int event = V4L2_EVENT_SEQ_CHANGED_INSUFFICIENT;
 	int rc = 0;
 	if (response) {

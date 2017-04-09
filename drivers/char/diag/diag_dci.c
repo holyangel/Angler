@@ -1392,6 +1392,9 @@ void diag_dci_notify_client(int peripheral_mask, int data, int proc)
 			if (stat)
 				pr_err("diag: Err sending dci signal to client, signal data: 0x%x, stat: %d\n",
 							info.si_int, stat);
+			} else
+				pr_err("diag: client data is corrupted, signal data: 0x%x\n",
+						info.si_int);
 		}
 	}
 }
