@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 103
-EXTRAVERSION = -SkyDragon-N-v1.
+EXTRAVERSION = -SkyDragon-N-v2
 NAME = TOSSUG Baby Fish
 
 # *DOCUMENTATION*
@@ -248,16 +248,16 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 # Extra GCC Optimizations	  
 EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels=1 \
-				-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
-                -fsched-spec-load -fpredictive-commoning \
-                -funroll-loops -funswitch-loops
+				-fira-hoist-pressure -fira-loop-pressure \
+				-fgcse-lm -fgcse-sm -fgcse-las \
+                -fsched-spec-load \
                  
 				
 # Arm Architecture Specific
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
 ARM_ARCH_OPT := $(call cc-option,-march=armv8-a) -mcpu=cortex-a57.cortex-a53+crc+crypto+fp+simd \
-				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=2048
+				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=4096
 
 # Optional
 GEN_OPT_FLAGS := \
