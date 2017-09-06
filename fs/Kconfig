@@ -273,4 +273,10 @@ endif # NETWORK_FILESYSTEMS
 source "fs/nls/Kconfig"
 source "fs/dlm/Kconfig"
 
+config DYNAMIC_FSYNC
+	default n
+	bool "dynamic file sync control"
+	help
+	  An experimental file sync control using new power_suspend driver
+
 endmenu
