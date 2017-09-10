@@ -61,6 +61,20 @@ config CFQ_GROUP_IOSCHED
 	---help---
 	  Enable group IO scheduling in CFQ.
 
+config IOSCHED_MAPLE
+	tristate "Maple I/O scheduler"
+	default y
+	---help---
+	 Maple is based on the Zen and Simple I/O schedulers. It uses ZEN's 
+	 first-come-first-serve style algorithm with separate read/write 
+	 requests and improved former/latter request handling from SIO. 
+	 Maple is biased towards handling asynchronous requests before 
+	 synchronous, and read requests before write. While this can have 
+	 negative aspects on write intensive tasks like file copying, it 
+	 slightly improves UI responsiveness. When the device is asleep, 
+	 maple increases the expiry time of requests so that it can handle 
+	 them more slowly, causing less overhead.
+
 choice
 	prompt "Default I/O scheduler"
 	default DEFAULT_CFQ
@@ -86,6 +100,9 @@ choice
 
 	config DEFAULT_NOOP
 		bool "No-op"
+
+	config DEFAULT_MAPLE
+		bool "Maple" if IOSCHED_MAPLE=y
 
 endchoice
 
