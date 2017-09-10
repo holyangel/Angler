@@ -242,6 +242,29 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
+# SkyDragon Optimization #
+
+# Graphite Flags
+# GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize 
+
+# Extra GCC Optimizations	  
+EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels=1 \
+				-fira-hoist-pressure -fira-loop-pressure \
+				-fgcse-sm -fgcse-las -fgcse-after-reload \
+                -fsched-pressure -fsched-spec-load \
+
+# Arm Architecture Specific
+# fall back to -march=armv8-a in case the compiler isn't compatible
+# with -mcpu and -mtune
+ARM_ARCH_OPT := $(call cc-option,-march=armv8-a) -mcpu=cortex-a57.cortex-a53+crc+crypto+fp+simd \
+				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=2048
+
+# Optional
+GEN_OPT_FLAGS := \
+ -DNDEBUG -pipe \
+ -fomit-frame-pointer -fivopts \
+ -fmodulo-sched -fmodulo-sched-allow-regmoves
+
 HOSTCC       = gcc
 HOSTCXX      = g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
