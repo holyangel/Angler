@@ -267,8 +267,8 @@ GEN_OPT_FLAGS := \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -std=gnu89 $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
+HOSTCXXFLAGS = -O2 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -fdeclone-ctor-dtor
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -351,7 +351,7 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld
+LD		= $(CROSS_COMPILE)ld --strip-debug 
 REAL_CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
@@ -372,11 +372,11 @@ CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   =
-AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
-AFLAGS_KERNEL	=
+CFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL) -flto
+AFLAGS_MODULE   = -DMODULE $(CFLAGS_KERNEL) -flto
+LDFLAGS_MODULE  = --strip-debug
+CFLAGS_KERNEL	= -fno-prefetch-loop-arrays $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS)
+AFLAGS_KERNEL	= $(CFLAGS_KERNEL)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -403,12 +403,12 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks
-KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL :=
-KBUILD_AFLAGS   := -D__ASSEMBLY__
-KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE
+		   -std=gnu89 -fno-delete-null-pointer-checks $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE)
+KBUILD_AFLAGS_KERNEL := $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+KBUILD_CFLAGS_KERNEL := $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_AFLAGS   := -D__ASSEMBLY__ $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
+KBUILD_AFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE)
+KBUILD_CFLAGS_MODULE  := -DMODULE $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
@@ -601,9 +601,9 @@ endif # $(dot-config)
 all: vmlinux
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 else
-KBUILD_CFLAGS	+= -O2
+KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GRAPHITE) $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT)
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
@@ -664,7 +664,7 @@ KBUILD_CFLAGS   += $(call cc-option, -fno-var-tracking-assignments)
 
 ifdef CONFIG_DEBUG_INFO
 KBUILD_CFLAGS	+= -g
-KBUILD_AFLAGS	+= -gdwarf-2
+KBUILD_AFLAGS	+= -g
 endif
 
 ifdef CONFIG_DEBUG_INFO_REDUCED
