@@ -1,3 +1,39 @@
+HolyDragon Kernel Release Notes 3.x
+
+This kernel is based on stock google source for the Nexus6p/Angler.
+Defconfig: hd_defconfig
+Toolchain: Pre-set to use Linaro-4.9.4_2017.01
+
+To build:
+Edit CROSS_COMPILE line in 'Makefile' to point to your full path 
+location of your desired toolchain. 
+NOTE: This kernel is meant to be built with 4.9.x only. Will need fixes
+to run a higher version toolchain.
+
+In Terminal in root of this kernel directory:
+mkdir -p out
+make O=/full/path/to/out hd_defconfig
+make O=/full/path/to/out -j #cpu-cores
+?????
+Profit
+
+Credits:
+Flar2
+GuneetAtwal
+TheCrazyLex
+Frap129
+FranciscoFranco
+Friedrich420
+Savoca
+Dorimanx
+Sultanxda
+andip71
+AudioGod
+Faux123
+LordBoeffla
+
+-------------------------------------------------------------------------------
+
         Linux kernel release 3.x <http://kernel.org/>
 
 These are the release notes for Linux version 3.  Read them carefully,
