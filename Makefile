@@ -1,8 +1,8 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 73
-EXTRAVERSION =
-NAME = TOSSUG Baby Fish
+EXTRAVERSION = HolyDragon-v3.00
+NAME = Aido Wedo
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -191,10 +191,37 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 # A third alternative is to store a setting in .config so that plain
 # "make" in the configured kernel build directory always uses that.
 # Default value for CROSS_COMPILE is not to prefix executables
-# Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-ARCH		?= $(SUBARCH)
-CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+ARCH		:= arm64
+SUBARCH		:= arm64
+CROSS_COMPILE	:= /home/holyangel/android/linaro-4.9.4-2017.01/bin/aarch64-linux-gnu-
 
+
+# HolyDragon Optimization Flags #
+
+# Graphite
+#GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize -ftree-loop-distribution -ftree-loop-distribute-patterns
+
+# Extra GCC Optimizations	  
+EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels=1 \
+                -fira-hoist-pressure -fira-loop-pressure \
+                -fno-gcse \
+                -fsched-pressure -fsched-spec-load \
+                -fno-prefetch-loop-arrays -fpredictive-commoning \
+                -fvect-cost-model=dynamic -fsimd-cost-model=dynamic \
+                -ftree-partial-pre
+
+# Arm Architecture Specific
+# fall back to -march=armv8-a in case the compiler isn't compatible
+# with -mcpu and -mtune
+ARM_ARCH_OPT := $(call cc-option,-march=armv8-a) -mcpu=cortex-a57.cortex-a53+crc+crypto+fp+simd \
+				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=1024 \
+
+# Optional
+GEN_OPT_FLAGS := \
+ -DNDEBUG -pipe \
+ -fomit-frame-pointer -fivopts \
+ -fmodulo-sched -fmodulo-sched-allow-regmoves
+ 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
 SRCARCH 	:= $(ARCH)
@@ -241,8 +268,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 $(GEN_OPT_FLAGS) $(EXTRA_OPTS) $(GRAPHITE)
+HOSTCXXFLAGS = -O2 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) -fdeclone-ctor-dtor
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -325,9 +352,9 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld
-REAL_CC		= $(CROSS_COMPILE)gcc
-CPP		= $(CC) -E
+LD		= $(CROSS_COMPILE)ld --strip-debug
+REAL_CC		= $(CROSS_COMPILE)gcc -g0
+CPP		= $(CC) -E -fdeclone-ctor-dtor -flto -fuse-linker-plugin
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
 STRIP		= $(CROSS_COMPILE)strip
@@ -348,9 +375,9 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
-AFLAGS_KERNEL	=
+LDFLAGS_MODULE  = --strip-debug
+CFLAGS_KERNEL	= $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) 
+AFLAGS_KERNEL	= $(CFLAGS_KERNEL) -flto -fuse-linker-plugin -r
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -377,12 +404,12 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks
-KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL :=
-KBUILD_AFLAGS   := -D__ASSEMBLY__
-KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE
+		   -fno-delete-null-pointer-checks -std=gnu89 -fno-delete-null-pointer-checks $(EXTRA_OPTS) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE)
+KBUILD_AFLAGS_KERNEL := $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+KBUILD_CFLAGS_KERNEL := $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+KBUILD_AFLAGS   := -D__ASSEMBLY__ $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+KBUILD_AFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
+KBUILD_CFLAGS_MODULE  := -DMODULE $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
@@ -577,7 +604,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -O2
+KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,) $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(GRAPHITE) $(EXTRA_OPTS)
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
