@@ -1,77 +1,104 @@
 #!/bin/bash
+############################################################
+### Build script for HolyDragon kernel ###
+############################################################
 
-##############################
+# This is the full build script used to build the official kernel zip.
 
-# Defconfig
+# Minimum requirements to build:
+# Already working build environment :P 
+#
+# In this script: 
+# You will need to change the 'Source path to kernel tree' to match your current path to this source.
+# You will need to change the 'Compile Path to out' to match your current path to this source.
+# You will also need to edit the '-j32' under 'Start Compile' section and adjust that to match the amount of cores you want to use to build.
+# 
+# In Makefile: 
+# You will need to edit the 'CROSS_COMPILE=' line to match your current path to this source.
+# 
+# Once those are done, you should be able to execute './build.sh' from terminal and receive a working zip.
+
+############################################################
+# Build Script Variables
+############################################################ 
+
+# Source defconfig used to build
 	dc=hdk_defconfig
 
-# Path to kernel source
+# Source Path to kernel tree
 	k=/home/holyangel/android/Angler
 
-# Path to clean out
-	co=~/android/Angler/out
+# Source Path to clean(empty) out folder
+	co=$k/out
 
-# Compile Path to out
+# Compile Path to out 
 	o="O=/home/holyangel/android/Angler/out"
 
-# Path to image.gz-dtb
-	i=~/android/Angler/out/arch/arm64/boot/Image.gz-dtb
+# Source Path to compiled Image.gz-dtb
+	i=$k/out/arch/arm64/boot/Image.gz-dtb
 
-# Kernel zip module path
-	zm=~/Downloads/HD-Angler-AK2-O-V3/build/system/lib/modules
+# Destination Path for compiled modules
+	zm=$k/build/system/lib/modules
 
-# Completed kernel zimage path
-	zi=~/Downloads/HD-Angler-AK2-O-V3/build/kernel/Image.gz-dtb
+# Destination path for compiled Image.gz-dtb
+	zi=$k/build/zImage
 	
-# Path to whole kernel zip folders
-	zp=~/Downloads/HD-Angler-AK2-O-V3/build/
+# Source path for building kernel zip
+	zp=$k/build/
 	
-# Path to whole kernel zip folders
-	zu=~/Downloads/HD-Angler-AK2-O-V3/Upload/
+# Destination Path for uploading kernel zip
+	zu=$k/upload/
 
-# Kernel zip Name
-	kn=HDK_Angler_AK2_V3.6.5.zip
+# Completed Kernel zip name
+	kn=HD-N6P-AK2-O-V4.zip
 
-##############################
-
+############################################################
 # Cleanup
+############################################################
+
 	echo "	Cleaning up out directory"
-	rm -rf "$co"
+	rm -Rf out/
 	echo "	Out directory removed!"
 
-##############################
+############################################################
+# Make out folder
+############################################################
 
-# Make out
 	echo "	Making new out directory"
 	mkdir -p "$co"
 	echo "	Created new out directory"
 
-##############################
-
+############################################################
 # Establish defconfig
+############################################################
+
 	echo "	Establishing build environment.."
 	make "$o" "$dc"
 
+############################################################
 # Start Compile
+############################################################
+
 	echo "	First pass started.."
-	make "$o" -j64
+	make "$o" -j32
 	echo "	First pass completed!"
 	echo "	"
 	echo "	Starting Second Pass.."
-	make "$o" -j64
+	make "$o" -j32
 	echo "	Second pass completed!"
 
-##############################
+############################################################
+# Copy image.gz-dtb to /build
+############################################################
 
-# Copy completed kernel to zip
 	echo "	Copying kernel to zip directory"
 	cp "$i" "$zi"
 	find . -name "*.ko" -exec cp {} "$zm" \;
 	echo "	Copying kernel completed!"
 	
-##############################
-
-# Zip files for upload
+############################################################
+# Make zip and move to /upload
+############################################################
 
 	echo "	Making zip file.."
 	cd "$zp"
@@ -81,3 +108,4 @@
 	echo "	Completed build script!"
 	echo "	Returning to start.."
 	cd "$k"
+
