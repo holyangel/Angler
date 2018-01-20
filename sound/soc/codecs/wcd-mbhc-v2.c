@@ -1424,6 +1424,7 @@ static irqreturn_t wcd_mbhc_hs_ins_irq(int irq, void *data)
 	struct wcd_mbhc *mbhc = data;
 	struct snd_soc_codec *codec = mbhc->codec;
 	u16 elect_result = 0;
+	bool detection_type = false;
 	static u16 hphl_trigerred = 0;
 	static u16 mic_trigerred = 0;
 
