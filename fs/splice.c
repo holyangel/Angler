@@ -1017,7 +1017,7 @@ generic_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
 		.pos = *ppos,
 		.u.file = out,
 	};
-	ssize_t ret;
+	ssize_t ret = 0;
 
 	pipe_lock(pipe);
 

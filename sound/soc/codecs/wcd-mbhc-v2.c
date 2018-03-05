@@ -364,7 +364,7 @@ static int wcd_cancel_btn_work(struct wcd_mbhc *mbhc)
 
 static bool wcd_swch_level_remove(struct wcd_mbhc *mbhc)
 {
-	u16 result2;
+	u16 result2 = 0;
 	struct snd_soc_codec *codec = mbhc->codec;
 
 	result2 = snd_soc_read(codec,
@@ -401,7 +401,7 @@ static void wcd_cancel_hs_detect_plug(struct wcd_mbhc *mbhc,
 static void wcd_mbhc_clr_and_turnon_hph_padac(struct wcd_mbhc *mbhc)
 {
 	bool pa_turned_on = false;
-	u8 wg_time;
+	u8 wg_time = 0;
 	struct snd_soc_codec *codec = mbhc->codec;
 
 	wg_time = snd_soc_read(codec, MSM8X16_WCD_A_ANALOG_RX_HPH_CNP_WG_TIME);
@@ -439,7 +439,7 @@ static bool wcd_mbhc_is_hph_pa_on(struct snd_soc_codec *codec)
 
 static void wcd_mbhc_set_and_turnoff_hph_padac(struct wcd_mbhc *mbhc)
 {
-	u8 wg_time;
+	u8 wg_time = 0;
 	struct snd_soc_codec *codec = mbhc->codec;
 
 	wg_time = snd_soc_read(codec, MSM8X16_WCD_A_ANALOG_RX_HPH_CNP_WG_TIME);
@@ -851,7 +851,7 @@ static bool wcd_check_cross_conn(struct wcd_mbhc *mbhc)
 	u16 swap_res;
 	struct snd_soc_codec *codec = mbhc->codec;
 	enum wcd_mbhc_plug_type plug_type = mbhc->current_plug;
-	s16 reg1;
+	s16 reg1 = 0;
 
 	if (wcd_swch_level_remove(mbhc)) {
 		pr_debug("%s: Switch level is low\n", __func__);
@@ -1252,8 +1252,8 @@ exit:
 
 static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 {
-	bool detection_type;
-	bool micbias1;
+	bool detection_type = false;
+	bool micbias1 = false;
 	struct snd_soc_codec *codec = mbhc->codec;
 	pr_debug("%s: enter\n", __func__);
 
@@ -1423,10 +1423,10 @@ static irqreturn_t wcd_mbhc_hs_ins_irq(int irq, void *data)
 {
 	struct wcd_mbhc *mbhc = data;
 	struct snd_soc_codec *codec = mbhc->codec;
-	u16 result2;
-	bool detection_type;
-	static u16 hphl_trigerred;
-	static u16 mic_trigerred;
+	u16 elect_result = 0;
+	bool detection_type = false;
+	static u16 hphl_trigerred = 0;
+	static u16 mic_trigerred = 0;
 
 	pr_debug("%s: enter\n", __func__);
 	if (!mbhc->mbhc_cfg->detect_extn_cable) {
