@@ -1,8 +1,8 @@
 VERSION = 3
 PATCHLEVEL = 10
 SUBLEVEL = 73
-EXTRAVERSION = HolyDragon-v4.0
-NAME = Aido Wedo
+EXTRAVERSION = HolyDragon-v5.0
+NAME = Azhi Dahaka
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

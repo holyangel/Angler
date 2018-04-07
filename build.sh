@@ -50,7 +50,7 @@
 	zu=$k/upload/
 
 # Completed Kernel zip name
-	kn=HD-N6P-AK2-O-V4.zip
+	kn=HD-N6P-AK2-O-V5.zip
 
 ############################################################
 # Cleanup
